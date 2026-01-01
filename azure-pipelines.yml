@@ -4,13 +4,15 @@ trigger: none
 pool: selfhostagent
 
 parameters:
-- name: environment
+- name: environments
   type: object
-  default: dev
+  default:
+    - dev
   values:
-  - dev
-  - prod
-  - qa
+    - dev
+    - qa
+    - prod
+
 
 
 
