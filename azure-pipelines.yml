@@ -12,15 +12,15 @@ parameters:
   - qa
   - prod
 
-- name: Stage 
-  type: string
-  default: LintAndCheckov
-  values:
-  - LintAndCheckov
-  - Validate
-  - plan
-  - ManualValidation
-  - Apply
+# - name: Stage 
+#   type: string
+#   default: LintAndCheckov
+#   values:
+#   - LintAndCheckov
+#   - Validate
+#   - plan
+#   - ManualValidation
+#   - Apply
 
 - name: runApply
   displayName: Run Terraform Apply?
