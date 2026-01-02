@@ -36,7 +36,7 @@ parameters:
 
 variables:
   azureServiceConnection: "ashu-Service-connection"
-  terraformfilepath: "$(System.DefaultWorkingDirectory)/env/$(parameters.environments)"
+  terraformfilepath: "$(System.DefaultWorkingDirectory)/env"
   backendKey: $(parameters.environments).tfstate
 
 
@@ -57,7 +57,7 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          cd $(terraformfilepath)
+          cd $(terraformfilepath)/$(parameters.environments)
           tflint --init
           tflint
 
@@ -68,7 +68,7 @@ stages:
         targetType: 'inline'
         script: |
           $env:HOME = "$env:USERPROFILE"
-          cd $(terraformfilepath)
+          cd $(terraformfilepath)/$(parameters.environments)
           checkov -d . --framework terraform
 
     - task: AzureCLI@2
@@ -79,7 +79,7 @@ stages:
         scriptType: ps
         scriptLocation: inlineScript
         inlineScript: |
-          cd $(terraformfilepath)
+          cd $(terraformfilepath)/$(parameters.environments)
           tfsec
 
 # - stage: Validate
@@ -97,7 +97,7 @@ stages:
 #       inputs:
 #         provider: 'azurerm'
 #         command: 'init'
-#         workingDirectory: '$(terraformfilepath)'
+#         workingDirectory: '$(terraformfilepath)/$(parameters.environments)'
 #         backendServiceArm: 'ashu-Service-connection'
 #         backendAzureRmResourceGroupName: 'rg-bknd-ashu'
 #         backendAzureRmStorageAccountName: 'stgbkendpipelineashu'
@@ -109,7 +109,7 @@ stages:
 #       inputs:
 #         provider: 'azurerm'
 #         command: 'validate'
-#         workingDirectory: '$(terraformfilepath)'
+#         workingDirectory: '$(terraformfilepath)/$(parameters.environments)'
 
 
 # - stage: plan
@@ -127,7 +127,7 @@ stages:
 #       inputs:
 #         provider: 'azurerm'
 #         command: 'init'
-#         workingDirectory: '$(terraformfilepath)'
+#         workingDirectory: '$(terraformfilepath)/$(parameters.environments)'
 #         backendServiceArm: 'ashu-Service-connection'
 #         backendAzureRmResourceGroupName: 'rg-bknd-ashu'
 #         backendAzureRmStorageAccountName: 'stgbkendpipelineashu'
@@ -140,7 +140,7 @@ stages:
 #       inputs:
 #         provider: 'azurerm'
 #         command: 'plan'
-#         workingDirectory: '$(terraformfilepath)'
+#         workingDirectory: '$(terraformfilepath)/$(parameters.environments)'
 #         environmentServiceNameAzureRM: 'ashu-Service-connection'
 
 #     - task: InfracostSetup@2
@@ -152,7 +152,7 @@ stages:
 #     - task: CmdLine@2
 #       inputs:
 #         script: |
-#           cd $(terraformfilepath)
+#           cd $(terraformfilepath)/$(parameters.environments)
 #           infracost breakdown --path . --format table
 
 
@@ -183,7 +183,7 @@ stages:
 #       inputs:
 #         provider: 'azurerm'
 #         command: 'init'
-#         workingDirectory: '$(terraformfilepath)'
+#         workingDirectory: '$(terraformfilepath)/$(parameters.environments)'
 #         backendServiceArm: 'ashu-Service-connection'
 #         backendAzureRmResourceGroupName: 'rg-bknd-ashu'
 #         backendAzureRmStorageAccountName: 'stgbkendpipelineashu'
@@ -195,6 +195,6 @@ stages:
 #       inputs:
 #         provider: 'azurerm'
 #         command: 'apply'
-#         workingDirectory: '$(terraformfilepath)'
+#         workingDirectory: '$(terraformfilepath)/$(parameters.environments)'
 #         # commandOptions: '-auto-approve'
 #         environmentServiceNameAzureRM: 'ashu-Service-connection'
