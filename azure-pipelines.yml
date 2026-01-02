@@ -12,15 +12,6 @@ parameters:
   - qa
   - prod
 
-# - name: Stage 
-#   type: string
-#   default: LintAndCheckov
-#   values:
-#   - LintAndCheckov
-#   - Validate
-#   - plan
-#   - ManualValidation
-#   - Apply
 
 - name: runApply
   displayName: Run Terraform Apply?
@@ -151,6 +142,7 @@ stages:
           infracost breakdown --path . --format table
 
 
+
 - stage: ManualValidation
   displayName: Manual Validation Check
   dependsOn: plan
@@ -168,6 +160,7 @@ stages:
 - stage: Apply
   displayName: Terraform Apply
   condition: eq('${{ parameters.runApply }}', true)
+
   dependsOn: ManualValidation
   jobs:
   - job: Apply
