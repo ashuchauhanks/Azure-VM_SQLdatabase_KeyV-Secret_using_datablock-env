@@ -7,45 +7,44 @@ parameters:
 - name: environments
   type: stringList
   default:
-    - dev
+  - dev
   values:
-    - dev
-    - qa
-    - prod
+  - dev
+  - qa
+  - prod
 
-# - name: myStringlist # Define a parameter named 'myStringlist'
-#   type: stringList # The parameter type is stringList
-#   displayName: Regions
-#   values: # Allowed values for 'myStringlist'
-#     - WUS
-#     - CUS
-#     - EUS
-#   default: # Default values
-#     - WUS
-#     - CUS
+- name: Stage 
+  type: stringList
+  default:
+  - LintAndCheckov
+  - Validate
+  - plan
+
+  values:
+  - LintAndCheckov
+  - Validate
+  - plan
+  - ManualValidation
+  - Apply
+
 
 
 variables:
   azureServiceConnection: "ashu-Service-connection"
-  terraformRoot: "$(System.DefaultWorkingDirectory)/Azure-VM_SQLdatabase_KeyV-Secret_using_datablock/root"
-
+  terraformfilepath: "$(System.DefaultWorkingDirectory)/env/$(parameters.environments)"
+  backendKey: $(parameters.environments).tfstate
 
 # stages:
 # - ${{ each env in parameters.environments }}:
 #   - stage: Deploy_${{ env }}
 #     displayName: Deploy to ${{ env }}
 
-#     variables:
-#       terraformRoot: ${{ env }}
-#       backendKey: ${{ env }}.tfstate
 
-#     jobs:
-#     - job: TerraformJob
-#       steps:
-#       - task: TerraformInstaller@1
+
+
+
 #         displayName: Terraform Init (${{ env }})
-#         inputs:
-#           terraformVersion: 'latest'
+
 
 
 
@@ -66,7 +65,7 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          cd $(System.DefaultWorkingDirectory)/Azure-VM_SQLdatabase_KeyV-Secret_using_datablock/root
+          cd $(terraformfilepath)
           tflint --init
           tflint
 
@@ -77,7 +76,7 @@ stages:
         targetType: 'inline'
         script: |
           $env:HOME = "$env:USERPROFILE"
-          cd $(System.DefaultWorkingDirectory)/Azure-VM_SQLdatabase_KeyV-Secret_using_datablock/root
+          cd $(terraformfilepath)
           checkov -d . --framework terraform
 
     - task: AzureCLI@2
@@ -88,7 +87,7 @@ stages:
         scriptType: ps
         scriptLocation: inlineScript
         inlineScript: |
-          cd $(System.DefaultWorkingDirectory)/Azure-VM_SQLdatabase_KeyV-Secret_using_datablock/root
+          cd $(terraformfilepath)
           tfsec
 
 - stage: Validate
@@ -106,19 +105,19 @@ stages:
       inputs:
         provider: 'azurerm'
         command: 'init'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure-VM_SQLdatabase_KeyV-Secret_using_datablock/root'
+        workingDirectory: '$(terraformfilepath)'
         backendServiceArm: 'ashu-Service-connection'
         backendAzureRmResourceGroupName: 'rg-bknd-ashu'
         backendAzureRmStorageAccountName: 'stgbkendpipelineashu'
         backendAzureRmContainerName: 'tfcontainer'
-        backendAzureRmKey: 'root.tfstate'
+        backendAzureRmKey: $(backendKey)
     - task: TerraformTask@5
       displayName: terraform validate
       continueOnError: true
       inputs:
         provider: 'azurerm'
         command: 'validate'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure-VM_SQLdatabase_KeyV-Secret_using_datablock/root'
+        workingDirectory: '$(terraformfilepath)'
 
 
 - stage: plan
@@ -136,12 +135,12 @@ stages:
       inputs:
         provider: 'azurerm'
         command: 'init'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure-VM_SQLdatabase_KeyV-Secret_using_datablock/root'
+        workingDirectory: '$(terraformfilepath)'
         backendServiceArm: 'ashu-Service-connection'
         backendAzureRmResourceGroupName: 'rg-bknd-ashu'
         backendAzureRmStorageAccountName: 'stgbkendpipelineashu'
         backendAzureRmContainerName: 'tfcontainer'
-        backendAzureRmKey: 'root.tfstate'
+        backendAzureRmKey: $(backendKey)
 
     - task: TerraformTask@5
       continueOnError: true
@@ -149,7 +148,7 @@ stages:
       inputs:
         provider: 'azurerm'
         command: 'plan'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure-VM_SQLdatabase_KeyV-Secret_using_datablock/root'
+        workingDirectory: '$(terraformfilepath)'
         environmentServiceNameAzureRM: 'ashu-Service-connection'
 
     - task: InfracostSetup@2
@@ -161,7 +160,7 @@ stages:
     - task: CmdLine@2
       inputs:
         script: |
-          cd $(System.DefaultWorkingDirectory)\Azure-VM_SQLdatabase_KeyV-Secret_using_datablock\root
+          cd $(terraformfilepath)
           infracost breakdown --path . --format table
 
 
@@ -191,18 +190,18 @@ stages:
       inputs:
         provider: 'azurerm'
         command: 'init'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure-VM_SQLdatabase_KeyV-Secret_using_datablock/root'
+        workingDirectory: '$(terraformfilepath)'
         backendServiceArm: 'ashu-Service-connection'
         backendAzureRmResourceGroupName: 'rg-bknd-ashu'
         backendAzureRmStorageAccountName: 'stgbkendpipelineashu'
         backendAzureRmContainerName: 'tfcontainer'
-        backendAzureRmKey: 'root.tfstate'
+        backendAzureRmKey: $(backendKey)
 
     - task: TerraformTask@5
       displayName: Terraform apply
       inputs:
         provider: 'azurerm'
         command: 'apply'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure-VM_SQLdatabase_KeyV-Secret_using_datablock/root'
+        workingDirectory: '$(terraformfilepath)'
         # commandOptions: '-auto-approve'
         environmentServiceNameAzureRM: 'ashu-Service-connection'
