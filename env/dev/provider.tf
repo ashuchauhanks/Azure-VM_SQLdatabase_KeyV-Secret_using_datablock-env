@@ -6,12 +6,12 @@ terraform {
       version = ">=4.33.0"
     }
   }
-   backend "azurerm" {
-    resource_group_name  = "rg-bknd-ashu"
-    storage_account_name = "stgbkendpipelineashu"
-    container_name       = "tfcontainer"
-    key                  = "root.tfstate"
-  }
+#   backend "azurerm" {
+#   resource_group_name  = "rg-bknd-ashu"
+#   storage_account_name = "stgbkendpipelineashu"
+#   container_name       = "tfcontainer"
+#   key                  = "root.tfstate"
+#  }
 }
 
 provider "azurerm" {
@@ -27,4 +27,5 @@ provider "azurerm" {
   }
   subscription_id = "bd6e61a5-d2a5-4a90-95dd-c977f616c3b7"
 }
+
 
