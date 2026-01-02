@@ -4,16 +4,25 @@ trigger: none
 pool: selfhostagent
 
 parameters:
-- name: environments
-  type: object
-  default:
-    - dev
-  values:
-    - dev
-    - qa
-    - prod
+# - name: environments
+#   type: object
+#   default:
+#     - dev
+#   values:
+#     - dev
+#     - qa
+#     - prod
 
-
+- name: myStringlist # Define a parameter named 'myStringlist'
+  type: stringList # The parameter type is stringList
+  displayName: Regions
+  values: # Allowed values for 'myStringlist'
+    - WUS
+    - CUS
+    - EUS
+  default: # Default values
+    - WUS
+    - CUS
 
 
 variables:
@@ -21,27 +30,27 @@ variables:
   terraformRoot: "$(System.DefaultWorkingDirectory)/Azure-VM_SQLdatabase_KeyV-Secret_using_datablock/root"
 
 
-stages:
-- ${{ each env in parameters.environments }}:
-  - stage: Deploy_${{ env }}
-    displayName: Deploy to ${{ env }}
-
-    variables:
-      terraformRoot: ${{ env }}
-      backendKey: ${{ env }}.tfstate
-
-    jobs:
-    - job: TerraformJob
-      steps:
-      - task: TerraformInstaller@1
-        displayName: Terraform Init (${{ env }})
-        inputs:
-          terraformVersion: 'latest'
-
-
-
-
 # stages:
+# - ${{ each env in parameters.environments }}:
+#   - stage: Deploy_${{ env }}
+#     displayName: Deploy to ${{ env }}
+
+#     variables:
+#       terraformRoot: ${{ env }}
+#       backendKey: ${{ env }}.tfstate
+
+#     jobs:
+#     - job: TerraformJob
+#       steps:
+#       - task: TerraformInstaller@1
+#         displayName: Terraform Init (${{ env }})
+#         inputs:
+#           terraformVersion: 'latest'
+
+
+
+
+stages:
 - stage: LintAndCheckov
   displayName: tflint sec checkov
   jobs:
