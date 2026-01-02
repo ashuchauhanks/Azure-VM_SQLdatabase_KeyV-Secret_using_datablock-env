@@ -14,7 +14,8 @@ parameters:
 #     - prod
 
 - name: myStringlist # Define a parameter named 'myStringlist'
-  type: stringList # The parameter type is stringList
+  # type: stringList # The parameter type is stringList
+  type: object
   displayName: Regions
   values: # Allowed values for 'myStringlist'
     - WUS
