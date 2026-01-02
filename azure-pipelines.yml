@@ -27,6 +27,11 @@ parameters:
   - ManualValidation
   - Apply
 
+- name: runApply
+  displayName: Run Terraform Apply?
+  type: boolean
+  default: false
+
 
 
 variables:
@@ -180,6 +185,7 @@ stages:
 
 - stage: Apply
   displayName: Terraform Apply
+  condition: eq('${{ parameters.runApply }}', true)
   dependsOn: ManualValidation
   jobs:
   - job: Apply
