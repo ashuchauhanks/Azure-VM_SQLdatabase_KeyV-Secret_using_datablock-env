@@ -137,11 +137,6 @@ stages:
         artifact: 'PlanFile'
         publishLocation: 'pipeline'
 
-    
-
-
-  # - job: apply
-  #   displayName: tfApply
 
 
 
@@ -175,32 +170,35 @@ stages:
 #         instructions: 'pls check and approve, if valid'
 
 
-# - stage: Apply
-#   displayName: Terraform Apply
-#   condition: eq('${{ parameters.runApply }}', true)
+- stage: Apply
+  displayName: Terraform Apply
+  condition: eq('${{ parameters.runApply }}', true)
 
-#   dependsOn: ManualValidation
-#   jobs:
-#   - job: Apply
-#     displayName: Terraform apply
-#     steps:
-#     - task: TerraformTask@5
-#       displayName: Terraform Init
-#       inputs:
-#         provider: 'azurerm'
-#         command: 'init'
-#         workingDirectory: '$(terraformfilepath)'
-#         backendServiceArm: $(azureServiceConnection)
-#         backendAzureRmResourceGroupName: 'rg-bknd-ashu'
-#         backendAzureRmStorageAccountName: 'stgbkendpipelineashu'
-#         backendAzureRmContainerName: 'tfcontainer'
-#         backendAzureRmKey: $(backendKey)
+  # dependsOn: ManualValidation
+  jobs:
+  - job: Apply
+    displayName: Terraform apply
+    steps:
+    - task: TerraformTask@5
+      displayName: Terraform Init
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(terraformfilepath)'
+        backendServiceArm: $(azureServiceConnection)
+        backendAzureRmResourceGroupName: 'rg-bknd-ashu'
+        backendAzureRmStorageAccountName: 'stgbkendpipelineashu'
+        backendAzureRmContainerName: 'tfcontainer'
+        backendAzureRmKey: $(backendKey)
 
-#     - task: TerraformTask@5
-#       displayName: Terraform apply
-#       inputs:
-#         provider: 'azurerm'
-#         command: 'apply'
-#         workingDirectory: '$(terraformfilepath)'
-#         # commandOptions: '-auto-approve'
-#         environmentServiceNameAzureRM: $(azureServiceConnection)
+    
+
+
+    - task: TerraformTask@5
+      displayName: Terraform apply
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        workingDirectory: '$(terraformfilepath)'
+        # commandOptions: '-auto-approve'
+        environmentServiceNameAzureRM: $(azureServiceConnection)
