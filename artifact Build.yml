@@ -127,7 +127,16 @@ stages:
   - job: InfraCost
     continueOnError: true
     displayName: Terraform InfraCost
+    dependsOn: terraformPlan
     steps: 
+    - task: DownloadPipelineArtifact@2
+      displayName: Download Artifact
+      inputs:
+        buildType: 'current'
+        artifactName: 'PlankiFile'
+        itemPattern: 'tfplan'
+        targetPath: '$(terraformfilepath)/'
+
 
     - task: InfracostSetup@2
       inputs:
