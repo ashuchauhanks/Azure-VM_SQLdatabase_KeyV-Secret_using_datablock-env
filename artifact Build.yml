@@ -127,14 +127,23 @@ stages:
         provider: 'azurerm'
         command: 'plan'
         workingDirectory: '$(terraformfilepath)'
-        environmentServiceNameAzureRM: $(azureServiceConnection)
+        commandOptions: '-out=tfplan'
+        environmentServiceNameAzureRM: '$(azureServiceConnection)'
 
 
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: '$(Pipeline.Workspace)'
+        targetPath: $(Pipeline.Workspace)
         artifact: 'Plan File'
         publishLocation: 'pipeline'
+
+
+  # - job: apply
+  #   displayName: tfApply
+
+
+
+
 
 #     - task: InfracostSetup@2
 #       inputs:
