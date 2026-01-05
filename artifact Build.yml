@@ -73,9 +73,9 @@ stages:
   displayName: Terraform Validate plan and infra cost
 
   jobs:
-  - job: terraformPlan
+  - job: terraformPlanInfraCost
     continueOnError: true
-    displayName: Terraform plan
+    displayName: Terraform plan Infra Cost
     steps: 
     - task: TerraformTask@5
       displayName: Terraform Init
@@ -124,21 +124,22 @@ stages:
         TargetFolder: '$(Pipeline.Workspace)'
         OverWrite: true
 
-  - job: InfraCost
-    continueOnError: true
-    displayName: Terraform InfraCost
-    dependsOn: terraformPlan
-    steps: 
-    - task: DownloadPipelineArtifact@2
-      displayName: Download Artifact
-      inputs:
-        buildType: 'current'
-        artifactName: 'PlankiFile'
-        itemPattern: 'tfplan'
-        targetPath: '$(terraformfilepath)/'
+  # - job: InfraCost
+  #   continueOnError: true
+  #   displayName: Terraform InfraCost
+  #   dependsOn: terraformPlan
+  #   steps: 
+  #   - task: DownloadPipelineArtifact@2
+  #     displayName: Download Artifact
+  #     inputs:
+  #       buildType: 'current'
+  #       artifactName: 'PlankiFile'
+  #       itemPattern: 'tfplan'
+  #       targetPath: '$(terraformfilepath)/'
 
 
     - task: InfracostSetup@2
+      displayName: DownloadInfraSetup
       inputs:
         apiKey: 'ico-qbgidTFYPSyYajjiobnp8QywUx08BGMO'
         version: '0.10.x'
@@ -146,6 +147,7 @@ stages:
 
 
     - task: CmdLine@2
+      displayName: InfraCost Breakdown
       inputs:
         script: |
           cd $(terraformfilepath)
