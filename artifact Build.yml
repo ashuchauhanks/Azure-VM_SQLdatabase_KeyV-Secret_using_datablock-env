@@ -133,8 +133,8 @@ stages:
 
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: $(Pipeline.Workspace)
-        artifact: 'Plan File'
+        targetPath: '$(terraformfilepath)'
+        artifact: 'PlanFile'
         publishLocation: 'pipeline'
 
 
