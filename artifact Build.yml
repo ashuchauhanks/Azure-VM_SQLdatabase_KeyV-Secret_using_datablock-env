@@ -133,9 +133,11 @@ stages:
 
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: '$(terraformfilepath)'
-        artifact: 'PlanFile'
+        targetPath: '$(terraformfilepath)/artifact'
+        artifact: 'tfPlanFile'
         publishLocation: 'pipeline'
+
+    
 
 
   # - job: apply
