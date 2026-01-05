@@ -27,7 +27,7 @@ variables:
 
 
 
-# stages:
+stages:
 # - stage: LintAndCheckov
 #   displayName: tflint sec checkov
 #   jobs:
@@ -99,14 +99,14 @@ variables:
 
 
 - stage: plan
-  dependsOn: 
-  - LintAndCheckov
-  - Validate
+  # dependsOn: 
+  # - LintAndCheckov
+  # - Validate
   displayName: Terraform plan infra cost
   jobs:
   - job: terraformPlan
     continueOnError: true
-    displayName: Terraform infra cost
+    displayName: Terraform plan infra cost
     steps: 
     - task: TerraformTask@5
       displayName: Terraform Init
