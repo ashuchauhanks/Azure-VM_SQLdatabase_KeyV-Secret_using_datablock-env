@@ -1,0 +1,195 @@
+
+
+trigger: none
+pool: selfhostagent
+
+parameters:
+- name: environments
+  type: string
+  default: dev
+  values:
+  - dev
+  - qa
+  - prod
+
+
+- name: runApply
+  displayName: Run Terraform Apply?
+  type: boolean
+  default: false
+
+
+
+variables:
+  azureServiceConnection: "ashu-Service-connection"
+  terraformfilepath: "$(System.DefaultWorkingDirectory)/env/${{ parameters.environments }}"
+  backendKey: ${{ parameters.environments }}.tfstate
+
+
+
+# stages:
+# - stage: LintAndCheckov
+#   displayName: tflint sec checkov
+#   jobs:
+#   - job: LintAndCheckovJob
+#     displayName: Terraform Lint And Checkov
+#     continueOnError: true
+#     steps: 
+
+
+#     - task: PowerShell@2
+#       displayName: tflint
+#       continueOnError: true
+#       inputs:
+#         targetType: 'inline'
+#         script: |
+#           cd $(terraformfilepath)
+#           tflint --init
+#           tflint
+
+#     - task: PowerShell@2
+#       displayName: checkov
+#       continueOnError: true
+#       inputs:
+#         targetType: 'inline'
+#         script: |
+#           $env:HOME = "$env:USERPROFILE"
+#           cd $(terraformfilepath)
+#           checkov -d . --framework terraform
+
+#     - task: AzureCLI@2
+#       displayName: TFSEC
+#       continueOnError: true
+#       inputs:
+#         azureSubscription: $(azureServiceConnection)
+#         scriptType: ps
+#         scriptLocation: inlineScript
+#         inlineScript: |
+#           cd $(terraformfilepath)
+#           tfsec
+
+# - stage: Validate
+#   dependsOn: LintAndCheckov
+#   displayName: Terraform Validate
+#   jobs:
+#   - job: TerraformValidate
+#     displayName: Terraform Validate
+#     continueOnError: true
+#     steps:
+
+#     - task: TerraformTask@5
+#       displayName: TerraformInit
+#       continueOnError: true
+#       inputs:
+#         provider: 'azurerm'
+#         command: 'init'
+#         workingDirectory: '$(terraformfilepath)'
+#         backendServiceArm: $(azureServiceConnection)
+#         backendAzureRmResourceGroupName: 'rg-bknd-ashu'
+#         backendAzureRmStorageAccountName: 'stgbkendpipelineashu'
+#         backendAzureRmContainerName: 'tfcontainer'
+#         backendAzureRmKey: $(backendKey)
+#     - task: TerraformTask@5
+#       displayName: terraform validate
+#       continueOnError: true
+#       inputs:
+#         provider: 'azurerm'
+#         command: 'validate'
+#         workingDirectory: '$(terraformfilepath)'
+
+
+- stage: plan
+  dependsOn: 
+  - LintAndCheckov
+  - Validate
+  displayName: Terraform plan infra cost
+  jobs:
+  - job: terraformPlan
+    continueOnError: true
+    displayName: Terraform infra cost
+    steps: 
+    - task: TerraformTask@5
+      displayName: Terraform Init
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(terraformfilepath)'
+        backendServiceArm: $(azureServiceConnection)
+        backendAzureRmResourceGroupName: 'rg-bknd-ashu'
+        backendAzureRmStorageAccountName: 'stgbkendpipelineashu'
+        backendAzureRmContainerName: 'tfcontainer'
+        backendAzureRmKey: $(backendKey)
+
+    - task: TerraformTask@5
+      continueOnError: true
+      displayName: Terraform Plan
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        workingDirectory: '$(terraformfilepath)'
+        environmentServiceNameAzureRM: $(azureServiceConnection)
+
+
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)'
+        artifact: 'Plan File'
+        publishLocation: 'pipeline'
+
+#     - task: InfracostSetup@2
+#       inputs:
+#         apiKey: 'ico-qbgidTFYPSyYajjiobnp8QywUx08BGMO'
+#         version: '0.10.x'
+#         currency: 'INR'
+
+#     - task: CmdLine@2
+#       inputs:
+#         script: |
+#           cd $(terraformfilepath)
+#           infracost breakdown --path . --format table
+
+
+
+# - stage: ManualValidation
+#   displayName: Manual Validation Check
+#   dependsOn: plan
+#   jobs:
+#   - job: ManualValidationJob
+#     pool: server
+#     steps:
+#     - task: ManualValidation@1
+#       displayName: ManualValidation
+#       inputs:
+#         approvers: 'ashuchauhanks@gmail.com'
+#         instructions: 'pls check and approve, if valid'
+
+
+# - stage: Apply
+#   displayName: Terraform Apply
+#   condition: eq('${{ parameters.runApply }}', true)
+
+#   dependsOn: ManualValidation
+#   jobs:
+#   - job: Apply
+#     displayName: Terraform apply
+#     steps:
+#     - task: TerraformTask@5
+#       displayName: Terraform Init
+#       inputs:
+#         provider: 'azurerm'
+#         command: 'init'
+#         workingDirectory: '$(terraformfilepath)'
+#         backendServiceArm: $(azureServiceConnection)
+#         backendAzureRmResourceGroupName: 'rg-bknd-ashu'
+#         backendAzureRmStorageAccountName: 'stgbkendpipelineashu'
+#         backendAzureRmContainerName: 'tfcontainer'
+#         backendAzureRmKey: $(backendKey)
+
+#     - task: TerraformTask@5
+#       displayName: Terraform apply
+#       inputs:
+#         provider: 'azurerm'
+#         command: 'apply'
+#         workingDirectory: '$(terraformfilepath)'
+#         # commandOptions: '-auto-approve'
+#         environmentServiceNameAzureRM: $(azureServiceConnection)
