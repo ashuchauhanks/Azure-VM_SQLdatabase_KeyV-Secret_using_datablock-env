@@ -134,7 +134,7 @@ stages:
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(terraformfilepath)/tfplan'
-        artifact: 'PlanFile'
+        artifact: 'PlankiFile'
         publishLocation: 'pipeline'
 
 
@@ -191,7 +191,12 @@ stages:
         backendAzureRmContainerName: 'tfcontainer'
         backendAzureRmKey: $(backendKey)
 
-    
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'current'
+        artifactName: 'PlankiFile'
+        itemPattern: 'tfplan'
+        targetPath: '$(terraformfilepath)/'
 
 
     - task: TerraformTask@5
@@ -200,5 +205,5 @@ stages:
         provider: 'azurerm'
         command: 'apply'
         workingDirectory: '$(terraformfilepath)'
-        # commandOptions: '-auto-approve'
-        environmentServiceNameAzureRM: $(azureServiceConnection)
+        commandOptions: 'tfplan'
+        environmentServiceNameAzureRM: '$(azureServiceConnection)'
